@@ -15,10 +15,12 @@ from random import choice
 
 identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
 
+#Read json file
 def readFile(filename):
     doc = urllib.urlopen(filename).read()
     return(json.loads(doc))
 
+#For each full-length, uncleaned abstract for a given author, test for language
 def testLanguage(authorID):
     J = readFile("AllAuthors/%s.json" % authorID)
     A = []
@@ -34,7 +36,7 @@ def testLanguage(authorID):
     [P.append(identifier.classify(x)) for x in A]
     return(P)
 
-
+#Get all abstract text for a specified author
 def getAbstract(authorID):
     J = readFile("AllAuthors/%s.json" % authorID)
     A = []
@@ -53,6 +55,8 @@ def getAbstract(authorID):
     A = [x.replace("no abstract is avail for thi item","") for x in A]
     return(' '.join(A))
 
+#Clean abstracts by removing punctuation, removing proper nouns, converting to lower case, and
+#using Porter stemming
 def clean(abstract):
     abstract = re.sub(r'[^\x00-\x7F]+',' ',abstract)
     for c in string.punctuation:
@@ -65,7 +69,7 @@ def clean(abstract):
     abstractStem = ' '.join([stemmer.stem(x) for x in a.split(' ')])
     return (abstractStem)
 
-
+#Collect and clean all abstracts for every author
 def collectAbstracts():
     mypath = os.getcwd() + "/AllAuthors/"
     allfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -82,6 +86,10 @@ def collectAbstracts():
         i = i+1
     return L
 
+#Limit the words in a given body of text, C, to include only k words
+#NOTE: this is used to account for the fact that some authors are far
+#more prolific than others. We want to make the bag of words the exact
+#same for each author
 def limitWords(C,k):
     for each in C.keys():
         L = C[each].split()
@@ -90,6 +98,7 @@ def limitWords(C,k):
         C[each] = bag
     return(C)
 
+#Create the term document matrix
 def createTermDocM(C,name):
     tdm = textmining.TermDocumentMatrix()
     [tdm.add_doc(C[x]) for x in C]
@@ -100,7 +109,7 @@ def createTermDocM(C,name):
     f.close()
     return (tdm)
 
-
+#Collect raw abstracts - same as collectAbstracts, but don't clean them
 def collectRawAbstracts():
     mypath = os.getcwd() + "/AllAuthors/"
     allfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
@@ -116,13 +125,17 @@ def collectRawAbstracts():
         i = i+1
     return L
 
+
+#Functions used for basic Markov model:
+
+#Turn a body of text into a list of words, split by spaces
 def createListOfWords(L):
     A = []
     for each in L.keys():
         A.extend(L[each].split())
     return(A)
 
-#Should be passed a list of words
+#Build a dictionary, using a list of words
 def build_dict(words):
     """
     Build a dictionary from the words.
@@ -143,8 +156,10 @@ def build_dict(words):
  
     return d
  
+#Define end of sentence
 EOS = ['.','?','!']
 
+#Generate a sentence using a dictionary d
 def generate_sentence(d):
 	li = [key for key in d.keys()]
 	key = choice(li)
@@ -167,7 +182,7 @@ def generate_sentence(d):
 
 	return ' '.join(li)
 
-#k is number of sentences:
+#Create a sample abstract using a dictionary d and k sentences
 def createAbstract(d,k):
     L = [generate_sentence(d) for i in range(0,k)]
     return(' '.join(L))
