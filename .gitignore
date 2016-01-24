@@ -1,2 +1,4 @@
 *.swp
 Article.docx
+.DS_Store
+.DS_Store?
