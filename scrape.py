@@ -8,10 +8,11 @@ from nltk.stem.porter import *
 import string
 import time
 
+#We will pull top 100 economists, as based on this arbitrary ranking:
 masterURL = "https://ideas.repec.org/top/top.person.all.html"
 prefix = "https://ideas.repec.org"
 
-#Pull all pages for ranked economists
+#Pull all pages for ranked economists and return economists webpages
 def readAuthorRankings(url):
 	doc = urllib.urlopen(url).read()
 	soup = BeautifulSoup(doc)
@@ -22,7 +23,7 @@ def readAuthorRankings(url):
 	A = [prefix + x for x in L]
 	return(A)
 
-#Read the page of an ecomomist and pull all links for articles
+#Read the page of a specific ecomomist and pull all links for articles
 def readAuthorPapers(url):
 	doc = urllib.urlopen(url).read()
 	soup = BeautifulSoup(doc)
@@ -33,7 +34,8 @@ def readAuthorPapers(url):
 	A = [prefix + x for x in L]
 	return(A)
 
-#Read the page of an economist and pull descriptive information including first name, last name, institution, etc.
+#Read the page of an economist and pull descriptive information including first name, last name, 
+#institution, etc.
 def readAuthorBio(url):
     doc = urllib.urlopen(url).read()
     soup = BeautifulSoup(doc)
@@ -45,7 +47,8 @@ def readAuthorBio(url):
     shortID = re.search("org/(.*?).html",url).group(1).replace("/","")
     return([firstName,lastName,shortID,url])
 
-#Read info about a paper, including paper name, other authors, and abstract. Note this only pulls authors registered with REPEC
+#Read info about a paper, including paper name, other authors, and abstract. Note this 
+#only pulls authors registered with REPEC
 def readPaper(url):
     doc = urllib.urlopen(url).read()
     soup = BeautifulSoup(doc)
